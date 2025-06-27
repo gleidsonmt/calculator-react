@@ -2,10 +2,10 @@ import { useState } from "react";
 import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   const [input, setInput] = useState("0");
-  const [result, setResult] = useState(0);
+  const [result, setResult] = useState();
+  const [formula, setFormula] = useState("0");
+  const [hide, setHide] = useState(true);
 
   let primaryPattern = /(\d+(\.\d+)?)[/|*]+(\d+(\.\d+)?)/g;
   let secondryPattern = /(\d+(\.\d+)?)[+|-]+(\d+(\.\d+)?)/g;
@@ -70,6 +70,17 @@ function App() {
 
   const handleEvent = (e) => {
     let displayText = e.target.innerText;
+    console.log("formula", formula);
+    // if (displayText.match(/[0-9]/)) {
+    console.log("display", displayText);
+
+    if (formula === "0") {
+      setFormula(displayText);
+      setHide(false);
+    } else {
+      setFormula(formula + displayText);
+    }
+
     setInput(displayText);
   };
 
@@ -90,6 +101,7 @@ function App() {
 
   return (
     <div className="wrapper">
+      <div className={`formula ${hide && "hide"}`}>{formula}</div>
       <div id="display">
         <p>{input}</p>
       </div>
