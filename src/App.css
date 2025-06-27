@@ -1,0 +1,44 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: right;
+
+  background: white;
+}
+
+#wrapper {
+  height: 300px;
+  width: 300px;
+  min-width: 300px;
+  min-height: 300px;
+  background-color: white;
+}
+
+#pad {
+  display: grid;
+  grid-template-columns: repeat(4, 60px);
+  grid-template-rows: repeat(5, 60px);
+  justify-content: center;
+}
+
+#clear {
+  grid-column: 1 / span 2;
+  background-color: #ff0505;
+  color: white;
+}
+
+#zero {
+  grid-column: 1 / span 2;
+}
+
+#equals {
+  grid-row: span 2;
+  background-color: #ff9505;
+  color: white;
+}
+
+#display {
+  display: flex;
+  justify-content: flex-end;
+}
