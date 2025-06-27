@@ -8,6 +8,9 @@ function App() {
   let secondryPattern = /(\d+(\.\d+)?)[+|-]+(\d+(\.\d+)?)/g;
   // let initial = "33*0.5";
   let initial = "33.5+0.5-2/4";
+  // 2/4 = 0.5
+  // 33.5+0.5-0.5
+  // 34-0.5
 
   // console.log(primaryPattern.test(str)); // true
   // console.log(initial.match(primaryPattern)); // ["5*6"]
@@ -20,7 +23,7 @@ function App() {
   // let math = "300+3".match(secondryPattern).join("").split(/[+|-]/g);
   // console.log("math", math); // ["30", "+", "3"]
 
-  let answer = recurse(initial); // "3+0-2/4"
+  // let answer = recurse(initial); // "3+0-2/4"
 
   function recurse(str) {
     console.log("str", str); // "3+5*6-2/4"
