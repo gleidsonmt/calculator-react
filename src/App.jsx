@@ -5,9 +5,9 @@ function App() {
   const [input, setInput] = useState("0");
   const [result, setResult] = useState();
   const [formula, setFormula] = useState("0");
-  const [hide, setHide] = useState(true);
+  const [hide, setHide] = useState(false);
 
-  let primaryPattern = /(\d+(\.\d+)?)[/|*]+(\d+(\.\d+)?)/g;
+  let primaryPattern = /(\d+(\.\d+)?)[/|*|x]+(\d+(\.\d+)?)/g;
   let secondryPattern = /(\d+(\.\d+)?)[+|-]+(\d+(\.\d+)?)/g;
   // let initial = "33*0.5";
   let initial = "33.5+0.5-2/4";
@@ -28,8 +28,26 @@ function App() {
 
   // let answer = recurse(initial); // "3+0-2/4"
 
+  let numberOne = "2";
+  let numberTwo = "4.5";
+  let numberThree = "3.5000";
+  let numberFour = "-2";
+  let numberFive = "-2.45";
+  let numberSix = "0.2";
+  let numberSeven = "0";
+  let numberEight = "0.0";
+
+  let testPattern = /((-)?\d+(\.\d+)?)/g;
+  // console.log("test", numberOne.match(testPattern)); // ["2"]
+  // console.log("test", numberTwo.match(testPattern)); // ["2"]
+  // console.log("test", numberThree.match(testPattern)); // ["2"]
+  // console.log("test", numberFour.match(testPattern)); // ["2"]
+  // console.log("test", numberFive.match(testPattern)); // ["2"]
+  // console.log("test", numberSix.match(testPattern)); // ["2"]
+  // console.log("test", numberSeven.match(testPattern)); // ["2"]
+  // console.log("test", numberEight.match(testPattern)); // ["2"]
+
   function recurse(str) {
-    console.log("str", str); // "3+5*6-2/4"
     if (str.match(primaryPattern) || str.match(secondryPattern)) {
       //str = str.replace(str.match(pattern), "");
       //let math = str.replace(str.match(pattern), "").split("");
@@ -38,14 +56,11 @@ function App() {
         : secondryPattern;
 
       let equation = str.match(pattern).join(" ").split(" ");
-      console.log("equation", equation[0]); // ["5*6"]
-      let operation = equation[0].match(/[-+*/]/g);
-      console.log("operation", operation); // ["*"]
+      let operation = equation[0].match(/[-+*x/]/g);
       let math = equation[0]
         .match(pattern)
         .join("")
         .split(/[-+*/]/g);
-      console.log("math", math); // ["5", "*", "6"]
 
       // // console.log("math", math); // ["5", "*", "6"]
       let result = doOperation(
@@ -53,14 +68,8 @@ function App() {
         parseFloat(math[0]),
         parseFloat(math[1])
       );
-      console.log("result", result); // 30
-      console.log("op", operation);
       math[2] = math[1];
       math[1] = operation[0];
-      console.log("math", math); // ["5", "*", "6"]
-      // let r = str.replace(pattern, result);
-      // console.log("str", r); // "3+30-2/4"
-      console.log("recurse", str.replace(math.join(""), result)); // "3+0-2/4"
       let r = str.replace(math.join(""), result);
       return recurse(r);
     } else {
@@ -69,20 +78,46 @@ function App() {
   }
 
   const handleEvent = (e) => {
-    let displayText = e.target.innerText;
-    console.log("formula", formula);
-    // if (displayText.match(/[0-9]/)) {
-    console.log("display", displayText);
+    let displayText = e.target.innerText.toLowerCase();
 
-    if (formula === "0") {
-      setFormula(displayText);
-      setHide(false);
+    if (isOperation(displayText)) {
+      setInput(displayText);
     } else {
-      setFormula(formula + displayText);
+      if (isOperation(input)) {
+        setInput(displayText);
+      } else {
+        setInput(input + displayText);
+      }
     }
+    setFormula(formula + displayText);
+    // console.log("formula", formula);
+    // // if (displayText.match(/[0-9]/)) {
+    // console.log("display", displayText);
 
-    setInput(displayText);
+    // if (formula.match(/./g)) {
+    //   console.log("ah", formula);
+    //   setFormula(input + displayText);
+    //   setHide(false);
+    // } else if (formula === "0") {
+    //   setFormula(displayText);
+    //   setHide(false);
+    // } else {
+    //   setFormula(formula + displayText);
+    // }
+
+    // console.log("input", displayText.match(/[1-9]/));
+    // if (input.match(/[1-9]/)) {
+    //   setInput(input + displayText);
+    // } else if (displayText.includes(".")) {
+    //   setInput(input + displayText);
+    // } else {
+    //   setInput(displayText);
+    // }
   };
+
+  function isOperation(str) {
+    return str.match(/[-+*x/]/g) ? true : false;
+  }
 
   function doOperation(op, a, b) {
     switch (op) {
@@ -91,6 +126,7 @@ function App() {
       case "-":
         return a - b;
       case "*":
+      case "x":
         return a * b;
       case "/":
         return a / b;
@@ -107,8 +143,8 @@ function App() {
       </div>
       <div id="pad">
         <button id="clear">AC</button>
-        <button>/</button>
-        <button>X</button>
+        <button onClick={handleEvent}>/</button>
+        <button onClick={handleEvent}>X</button>
         <button onClick={handleEvent} id="seven">
           7
         </button>
