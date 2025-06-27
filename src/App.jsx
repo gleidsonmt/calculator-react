@@ -4,6 +4,9 @@ import "./App.css";
 function App() {
   const [count, setCount] = useState(0);
 
+  const [input, setInput] = useState("0");
+  const [result, setResult] = useState(0);
+
   let primaryPattern = /(\d+(\.\d+)?)[/|*]+(\d+(\.\d+)?)/g;
   let secondryPattern = /(\d+(\.\d+)?)[+|-]+(\d+(\.\d+)?)/g;
   // let initial = "33*0.5";
@@ -65,8 +68,12 @@ function App() {
     }
   }
 
+  const handleEvent = (e) => {
+    let displayText = e.target.innerText;
+    setInput(displayText);
+  };
+
   function doOperation(op, a, b) {
-    console.log(a, op, b);
     switch (op) {
       case "+":
         return a + b;
@@ -84,26 +91,54 @@ function App() {
   return (
     <div className="wrapper">
       <div id="display">
-        <p>0</p>
+        <p>{input}</p>
       </div>
       <div id="pad">
         <button id="clear">AC</button>
         <button>/</button>
         <button>X</button>
-        <button id="seven">7</button>
-        <button id="eight">8</button>
-        <button id="nine">9</button>
-        <button id="minus">-</button>
-        <button id="four">4</button>
-        <button id="five">5</button>
-        <button id="six">6</button>
-        <button id="plus">+</button>
-        <button id="one">1</button>
-        <button id="two">2</button>
-        <button id="three">3</button>
-        <button id="equals">=</button>
-        <button id="zero">0</button>
-        <button id="decimal">.</button>
+        <button onClick={handleEvent} id="seven">
+          7
+        </button>
+        <button onClick={handleEvent} id="eight">
+          8
+        </button>
+        <button onClick={handleEvent} id="nine">
+          9
+        </button>
+        <button onClick={handleEvent} id="minus">
+          -
+        </button>
+        <button onClick={handleEvent} id="four">
+          4
+        </button>
+        <button onClick={handleEvent} id="five">
+          5
+        </button>
+        <button onClick={handleEvent} id="six">
+          6
+        </button>
+        <button onClick={handleEvent} id="plus">
+          +
+        </button>
+        <button onClick={handleEvent} id="one">
+          1
+        </button>
+        <button onClick={handleEvent} id="two">
+          2
+        </button>
+        <button onClick={handleEvent} id="three">
+          3
+        </button>
+        <button onClick={handleEvent} id="equals">
+          =
+        </button>
+        <button onClick={handleEvent} id="zero">
+          0
+        </button>
+        <button onClick={handleEvent} id="decimal">
+          .
+        </button>
       </div>
     </div>
   );
