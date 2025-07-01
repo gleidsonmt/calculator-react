@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import "./App.css";
 
 function App() {
   const [input, setInput] = useState("0");
   const [result, setResult] = useState();
-  const [formula, setFormula] = useState("0");
+  const [formula, setFormula] = useState("");
   const [hide, setHide] = useState(false);
 
   let primaryPattern = /(\d+(\.\d+)?)[/|*|x]+(\d+(\.\d+)?)/g;
@@ -47,76 +47,209 @@ function App() {
   // console.log("test", numberSeven.match(testPattern)); // ["2"]
   // console.log("test", numberEight.match(testPattern)); // ["2"]
 
-  function recurse(str) {
-    if (str.match(primaryPattern) || str.match(secondryPattern)) {
-      //str = str.replace(str.match(pattern), "");
-      //let math = str.replace(str.match(pattern), "").split("");
-      let pattern = str.match(primaryPattern)
-        ? primaryPattern
-        : secondryPattern;
+  let negativePattern = /^(\d|-)+(\.\d+)$.?/g;
+  // console.log("test", "-2.45".match(negativePattern)); // ["-2.45"]
+  // console.log("test", "2.45".match(negativePattern)); // ["2.45"]
+  // console.log("test", "2".match(negativePattern)); // ["2.45"]
+  // console.log("test", "-".match(negativePattern)); // ["2.45"]
 
-      let equation = str.match(pattern).join(" ").split(" ");
-      let operation = equation[0].match(/[-+*x/]/g);
-      let math = equation[0]
-        .match(pattern)
-        .join("")
-        .split(/[-+*/]/g);
+  // console.log("lol", "2.5".match(negativePattern)); // null
 
-      // // console.log("math", math); // ["5", "*", "6"]
-      let result = doOperation(
-        operation[0],
-        parseFloat(math[0]),
-        parseFloat(math[1])
-      );
-      math[2] = math[1];
-      math[1] = operation[0];
-      let r = str.replace(math.join(""), result);
-      return recurse(r);
+  let t = "5+-6";
+  // let r = recurse(initial);
+
+  // let equation = /((-)?\d+([-*/+x])(\.\d+)?)/g;
+  let equation = /(\-?\d+(.\d+?))([*])?(-?\d+(.\d?)+$)/g;
+  let numbers = /(-?\d+\.\d+)/g;
+  let eqTst = "-5.2-5.2".match(equation);
+
+  // (?<!\d): Um lookbehind que assegura que não há um dígito antes do número.
+
+  // let backup
+  // e um numero ((-)?\d+(\.\d+)?) pode ou nao comecar com - e pode ser um numero quebrado
+  // (((?<![+])-)? nao comeca com um operador e pode conter -
+  // let test =
+  // console.log(
+  //   "-3+30+-0.5".match(/((-)?\d+(\.\d+)?)([/*+-])+((-)?\d+(\.\d+)?)/g)
+  // );
+
+  // let f = "-2+20";
+  // let f = "-5+7+2+-5";
+  // let f = "-5.2/-3.5+2-5";
+  // let match = f.match(/(^-?\d+|^-?\d+\.\d+?)([/])(-?\d+\.\d+|-?\d+)/);
+
+  // console.log(match);
+  // console.log(match[0]);
+
+  // let a = match[1];
+  // let s = match[2];
+  // let b = match[3];
+  // let r = doOperation(s, parseFloat(a), parseFloat(b));
+
+  console.log("res", rec("-5.2/-3.5+-2-5"));
+  // rec("5/2+4");
+
+  function rec(str) {
+    console.log("kkk", str);
+    let primary = /(^-?\d+|^-?\d+\.\d+?)([/*])(-?\d+\.\d+|-?\d+)/;
+    let secondary = /(^-?\d+|^-?\d+\.\d+?)([-+])(-?\d+\.\d+|-?\d+)/;
+    let one = str.match(primary);
+    let two = str.match(secondary);
+    if (one) {
+      console.log("how", one);
+
+      let a = one[1];
+      let s = one[2];
+      let b = one[3];
+      let r = doOperation(s, parseFloat(a), parseFloat(b)).toFixed(4);
+      str = str.replace(one[0], r);
+      console.log(typeof r);
+      console.log("str", str);
+      return rec(str);
     } else {
-      return str;
+      if (two) {
+        console.log("ra", two);
+        let a = two[1];
+        let s = two[2];
+        let b = two[3];
+        let r = doOperation(s, parseFloat(a), parseFloat(b)).toFixed(4);
+        str = str.replace(two[0], r);
+        console.log("str2", str);
+        return rec(str);
+      } else {
+        console.log("s", str);
+        console.log("lulu", parseFloat(str));
+        return parseFloat(str);
+      }
+    }
+  }
+
+  function findEquation(str) {
+    // let primary = /((-)?\d+(\.\d+)?)([/|*|x])((-)?\d+(\.\d+)?)/g;
+    // let primary = /(((?<![+])-)?\d+(\.\d+)?)([/|*|x])((-)?\d+(\.\d+)?)/g; // ao contrario do q eu queria
+    let primary = /((-)?\d+(\.\d+)?)([/*]){1,2}((-)?\d+(\.\d+)?)/g;
+    let secondary = /((-)?\d+(\.\d+)?)([+|-]){1,2}((-)?\d+(\.\d+)?)/g;
+    let one = str.match(primary);
+    if (one) {
+      return one.join("");
+    } else {
+      return str.match(secondary) ? str.match(secondary).join("") : null;
+    }
+  }
+
+  function getEquation(str) {
+    let numbers = str.match(/(\d)/g);
+    let signal = str.match(/[-+/*]/g).join("");
+    return {
+      a: parseFloat(numbers[0]),
+      b: parseFloat(numbers[1]),
+      op: signal,
+    };
+  }
+
+  function getEquationOld(str) {
+    let ultimate = str.match(/([+|-])?([+|-])((-)?\d+(\.\d+)?)$/g);
+    let signals = ultimate
+      .join("")
+      .match(/[+]?[-]/g)
+      .join("")
+      .split("");
+    let numbers = str.match(/((-)?\d+(\.\d+)?)/g);
+    if (signals.length < 2) {
+      signals[0] = numbers[1].substring(0, 1);
+      numbers[1] = numbers[1].substring(1);
+    }
+    return {
+      a: parseFloat(numbers[0]),
+      b: parseFloat(numbers[1]),
+      op: signals[0],
+    };
+  }
+
+  function doEquation(eq) {
+    switch (eq.op) {
+      case "+":
+        return eq.a + eq.b;
+      case "*":
+      case "x":
+        return eq.a * eq.b;
+      case "-":
+        return eq.a - eq.b;
+      case "/":
+        return eq.a / eq.b;
+    }
+  }
+
+  function recurse(str) {
+    let item = findEquation(str);
+    console.log(item);
+    if (item) {
+      let equation = getEquation(item);
+      let result = doEquation(equation);
+
+      recurse(str.replace(item, result));
+    } else {
+      return parseFloat(str);
     }
   }
 
   const handleEvent = (e) => {
     let displayText = e.target.innerText.toLowerCase();
+    console.log("input", input);
+    // console.log("displayText", displayText);
+    let newInput = input + displayText;
+    console.log("newInput", newInput);
+    // console.log("formula", input + displayText);
 
-    if (isOperation(displayText)) {
-      setInput(displayText);
-    } else {
-      if (isOperation(input)) {
-        setInput(displayText);
-      } else {
-        setInput(input + displayText);
-      }
+    console.log("input is", isNumber(newInput));
+    if (displayText != "-") {
+      console.log("olele");
     }
-    setFormula(formula + displayText);
-    // console.log("formula", formula);
-    // // if (displayText.match(/[0-9]/)) {
-    // console.log("display", displayText);
 
-    // if (formula.match(/./g)) {
-    //   console.log("ah", formula);
-    //   setFormula(input + displayText);
-    //   setHide(false);
-    // } else if (formula === "0") {
-    //   setFormula(displayText);
-    //   setHide(false);
-    // } else {
-    //   setFormula(formula + displayText);
-    // }
+    if (input == "0" && displayText != ".") {
+      setInput(displayText);
+    } else if (isNumber(newInput)) {
+      setInput(newInput);
+    } else {
+      setInput(displayText);
+    }
 
-    // console.log("input", displayText.match(/[1-9]/));
-    // if (input.match(/[1-9]/)) {
-    //   setInput(input + displayText);
-    // } else if (displayText.includes(".")) {
-    //   setInput(input + displayText);
-    // } else {
+    let lastFormNumber =
+      formula[formula.length - 1] == undefined
+        ? "0"
+        : formula[formula.length - 1];
+    console.log("isOperand", isOperation(displayText));
+    console.log("lastFormNumber", lastFormNumber);
+    console.log("lastFormNumber", !displayText.match(/[0-9-]/g));
+    if (lastFormNumber != "-") {
+    }
+    if (!displayText.match(/[0-9-]/g) && !lastFormNumber.match(/[0-9+]/g)) {
+      setFormula(formula.replace(formula[formula.length - 1], displayText));
+      console.log(
+        "form",
+        formula.replace(formula[formula.length - 1], displayText)
+      );
+    } else {
+      setFormula(formula + displayText);
+    }
+
+    // if (!isNumber(newInput)) {
     //   setInput(displayText);
+    // } else if (isNumber(displayText)) {
+    //   setInput(input + displayText);
     // }
   };
 
   function isOperation(str) {
-    return str.match(/[-+*x/]/g) ? true : false;
+    return str.match(/[-+*x/]/g)
+      ? !str.match(/(-)?\d+(\.\d+)?/g)
+        ? true
+        : false
+      : false;
+  }
+
+  function isNumber(str) {
+    return str.match(/^(\d|-)+(\.)?(\d+)$/g) ? true : false;
   }
 
   function doOperation(op, a, b) {
