@@ -37,8 +37,3 @@
   background-color: #ff9505;
   color: white;
 }
-
-#display {
-  display: flex;
-  justify-content: flex-end;
-}
