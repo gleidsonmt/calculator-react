@@ -3,9 +3,8 @@ import "./App.css";
 
 function App() {
   const [input, setInput] = useState("0");
-  const [result, setResult] = useState();
   const [formula, setFormula] = useState("");
-  const [calculated, setCalculated] = useState(false);
+  const [nothing, setNothing] = useState(true);
   const [hide, setHide] = useState(false);
 
   let primaryPattern = /(\d+(\.\d+)?)[/|*|x]+(\d+(\.\d+)?)/g;
@@ -53,6 +52,7 @@ function App() {
   // let r = doOperation(s, parseFloat(a), parseFloat(b));
 
   // console.log("res", rec("5/2+4"));
+  // console.log("res", rec("5-9+5"));
   // let str = "3+5+52*60-2/4";
   // console.log(str.match(/(-?[\d]+)([*])([\d]+)/));
 
@@ -62,8 +62,6 @@ function App() {
     let verOne = str.match(pOperation); // First verification if have a * ou / operation
     let verTwo = str.match(sOperation); // Second verification if have a + ou - operation
     let result = str.match(pOperation) ? verOne : verTwo;
-    console.log("ver", str.match(pOperation));
-
     if (result) {
       let r = doOperation(
         result[2],
@@ -77,134 +75,87 @@ function App() {
     }
   }
 
-  function findEquation(str) {
-    // let primary = /((-)?\d+(\.\d+)?)([/|*|x])((-)?\d+(\.\d+)?)/g;
-    // let primary = /(((?<![+])-)?\d+(\.\d+)?)([/|*|x])((-)?\d+(\.\d+)?)/g; // ao contrario do q eu queria
-    let primary = /((-)?\d+(\.\d+)?)([/*]){1,2}((-)?\d+(\.\d+)?)/g;
-    let secondary = /((-)?\d+(\.\d+)?)([+|-]){1,2}((-)?\d+(\.\d+)?)/g;
-    let one = str.match(primary);
-    if (one) {
-      return one.join("");
-    } else {
-      return str.match(secondary) ? str.match(secondary).join("") : null;
-    }
-  }
-
-  function getEquation(str) {
-    let numbers = str.match(/(\d)/g);
-    let signal = str.match(/[-+/*]/g).join("");
-    return {
-      a: parseFloat(numbers[0]),
-      b: parseFloat(numbers[1]),
-      op: signal,
-    };
-  }
-
-  function getEquationOld(str) {
-    let ultimate = str.match(/([+|-])?([+|-])((-)?\d+(\.\d+)?)$/g);
-    let signals = ultimate
-      .join("")
-      .match(/[+]?[-]/g)
-      .join("")
-      .split("");
-    let numbers = str.match(/((-)?\d+(\.\d+)?)/g);
-    if (signals.length < 2) {
-      signals[0] = numbers[1].substring(0, 1);
-      numbers[1] = numbers[1].substring(1);
-    }
-    return {
-      a: parseFloat(numbers[0]),
-      b: parseFloat(numbers[1]),
-      op: signals[0],
-    };
-  }
-
-  function doEquation(eq) {
-    switch (eq.op) {
-      case "+":
-        return eq.a + eq.b;
-      case "*":
-      case "x":
-        return eq.a * eq.b;
-      case "-":
-        return eq.a - eq.b;
-      case "/":
-        return eq.a / eq.b;
-    }
-  }
   //8-6+5+8+9
   const handleResult = (e) => {
-    if (calculated) return;
+    // if (calculated) return;
 
     let result = rec(formula.replace(" ", ""));
-    setFormula(formula + e.target.innerText + result);
-    setInput(result);
-    setCalculated(true);
+    setFormula(String(result));
+    setInput(String(result));
   };
 
   const handleClear = (e) => {
     setFormula("0");
     setInput("0");
-    setCalculated(false);
+    setNothing(true);
   };
 
   const handleEvent = (e) => {
     let displayText = e.target.innerText.toLowerCase();
     // digito anterior
-    let newText = formula + displayText;
+    let newText = input + displayText;
     let aText = formula.substring(formula.length - 1, formula.length);
     /// novo digito displayText
     let combine = aText + displayText;
-    setInput(displayText);
-    console.log(combine);
-    console.log(newText.match(/[*/+x][*/x+]|[-*/+x][-*/x+][-*/x+]/));
-
-    if (newText.match(/[*/+x][*/x+]/)) {
-      setFormula(
-        formula.replace(formula.substring(formula.length - 1), displayText)
-      );
-      return;
-    }
-    if (combine.match(/[-][+/*x]/)) {
-      setFormula(
-        formula.replace(formula.substring(formula.length - 1), displayText)
-      );
-      return;
-    }
-
-    if (newText.match(/[-+/*/][-+/*x][-/*x]/)) {
-      setFormula(
-        formula.replace(formula.substring(formula.length - 1), displayText)
-      );
-      return;
-    }
-
-    if (input === "0" && displayText != ".") {
+    if (nothing) {
+      setInput(displayText);
+      setNothing(false);
       setFormula(displayText);
-    } else {
-      setFormula(formula + displayText);
+      return;
     }
-    // console.log("formula", input + displayText);
-    console.log("input", input);
 
-    // if (!isNumber(newInput)) {
-    //   setInput(displayText);
-    // } else if (isNumber(displayText)) {
-    //   setInput(input + displayText);
+    // se numero valido
+    let dots = (input + displayText).match(/[\.]/g);
+    if (dots && dots.length > 1) return;
+    if (input + displayText == "00") return;
+    // if (input.length == 1 && displayText.match(/\d[*/+x]/g)) return;
+    // if (combine.match(/\d[*/+x]/g)) return;
+    console.log("dots", dots);
+    let ver = (input + displayText).match(/^-?\d+(\.?\d+)$|^-?\d+(\.?)$/g);
+    // let ver = "5+".match(/^-?\d+$(\.?\d+)?/g);
+    if (ver) {
+      if (displayText.match(/\d[*/+x]/g)) {
+        setInput(displayText);
+      } else {
+        setInput(input + displayText);
+      }
+    } else {
+      console.log("odeio esses tests");
+      setInput(displayText);
+    }
+
+    setFormula(formula + displayText);
+
+    // console.log(ver ? ver.length : 0);
+    // console.log(input.match(/[+-/*]/g));
+
+    // if (input.length == 1 && displayText.match(/[/+*]/)) return;
+
+    // if (input.length == 1) {
+    //   if (displayText.match(/\d|-/)) {
+    //     if (nothing) {
+    //       setInput(displayText);
+    //       setNothing(false);
+    //     } else {
+    //       setInput(input + displayText);
+    //     }
+    //   } else {
+    //     setInput(input + displayText);
+    //   }
+    // } else {
+    //   if (displayText.match(/\d+/)) {
+    //     setInput(input + displayText);
+    //   } else {
+    //     if (displayText == "." && input.includes(".")) {
+    //       return;
+    //     }
+    //     setInput(displayText);
+    //   }
     // }
+    // console.log("display", displayText);
+    // console.log("combine", combine);
+    // console.log("s", input);
   };
-
-  function isOperation(str) {
-    return str.match(/[-+*x/]/g)
-      ? !str.match(/(-)?\d+(\.\d+)?/g)
-        ? true
-        : false
-      : false;
-  }
-
-  function isNumber(str) {
-    return str.match(/^(\d|-)+(\.)?(\d+)$/g) ? true : false;
-  }
 
   function doOperation(op, a, b) {
     switch (op) {
@@ -225,8 +176,9 @@ function App() {
   //3 + 5 * 6 - 2 / 4
   return (
     <div className="wrapper">
-      <div className={`formula}`}>{formula}</div>
-      <div id="display">{input}</div>
+      <div id="display">{formula}</div>
+      <div className={`formula`}>{input}</div>
+
       <div id="pad">
         <button id="clear" onClick={handleClear}>
           AC
@@ -235,7 +187,7 @@ function App() {
           /
         </button>
         <button id="multiply" onClick={handleEvent}>
-          X
+          *
         </button>
         <button onClick={handleEvent} id="seven">
           7
